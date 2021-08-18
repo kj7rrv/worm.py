@@ -88,6 +88,8 @@ char outbuf[BUFSIZ];
 void	crash(void) __attribute__((__noreturn__));
 void	display(const struct body *, char);
 int	main(int, char **);
+int	run_size(int);
+int	run_worm();
 void	leave(int) __attribute__((__noreturn__));
 void	life(void);
 void	newpos(struct body *);
@@ -97,12 +99,24 @@ int	rnd(int);
 void	setup(void);
 void	wake(int);
 
-int
-main(argc, argv)
-	int argc;
-	char **argv;
-{
+int main(int argc, char **argv) {
+	if (argc == 2)
+		run_size(atoi(argv[1]));
+	if ((start_len <= 0) || (start_len > ((LINES-3) * (COLS-2)) / 3))
+		run_size(LENGTH);
 
+	int retval = run_worm();
+
+	return retval;
+
+}
+
+int run_size(int sl) {
+	start_len = sl;
+	run_worm();
+}
+
+int run_worm() {
 	/* Revoke setgid privileges */
 	setregid(getgid(), getgid());
 
@@ -128,10 +142,6 @@ main(argc, argv)
 		endwin();
 		errx(1, "screen too small");
 	}
-	if (argc == 2)
-		start_len = atoi(argv[1]);
-	if ((start_len <= 0) || (start_len > ((LINES-3) * (COLS-2)) / 3))
-		start_len = LENGTH;
 	stw = newwin(1, COLS-1, 0, 0);
 	tv = newwin(LINES-1, COLS-1, 1, 0);
 	box(tv, '*', '*');
