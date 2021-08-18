@@ -4,6 +4,9 @@
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
+ * Copyright (c) 2021
+ * 	Samuel L Sloniker. All rights reserved.
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
@@ -29,11 +32,12 @@
  * SUCH DAMAGE.
  */
 
+/*
 #include <sys/cdefs.h>
 #ifndef lint
 __COPYRIGHT("@(#) Copyright (c) 1980, 1993\n\
 	The Regents of the University of California.  All rights reserved.\n");
-#endif /* not lint */
+#endif / * not lint * /
 
 #ifndef lint
 #if 0
@@ -41,7 +45,8 @@ static char sccsid[] = "@(#)worm.c	8.1 (Berkeley) 5/31/93";
 #else
 __RCSID("$NetBSD: worm.c,v 1.25 2004/01/27 20:30:31 jsm Exp $");
 #endif
-#endif /* not lint */
+#endif / * not lint * /
+*/
 
 /*
  * Worm.  Written by Michael Toy
