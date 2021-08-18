@@ -87,7 +87,7 @@ char outbuf[BUFSIZ];
 
 void	crash(void) __attribute__((__noreturn__));
 void	display(const struct body *, char);
-int	run_size(int);
+void	set_size(int);
 int	run_worm();
 void	leave(int) __attribute__((__noreturn__));
 void	life(void);
@@ -98,9 +98,8 @@ int	rnd(int);
 void	setup(void);
 void	wake(int);
 
-int run_size(int sl) {
+void set_size(int sl) {
 	start_len = sl;
-	run_worm();
 }
 
 int run_worm() {
