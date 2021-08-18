@@ -87,7 +87,6 @@ char outbuf[BUFSIZ];
 
 void	crash(void) __attribute__((__noreturn__));
 void	display(const struct body *, char);
-int	main(int, char **);
 int	run_size(int);
 int	run_worm();
 void	leave(int) __attribute__((__noreturn__));
@@ -98,18 +97,6 @@ void	prize(void);
 int	rnd(int);
 void	setup(void);
 void	wake(int);
-
-int main(int argc, char **argv) {
-	if (argc == 2)
-		run_size(atoi(argv[1]));
-	if ((start_len <= 0) || (start_len > ((LINES-3) * (COLS-2)) / 3))
-		run_size(LENGTH);
-
-	int retval = run_worm();
-
-	return retval;
-
-}
 
 int run_size(int sl) {
 	start_len = sl;
