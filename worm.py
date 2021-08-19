@@ -36,21 +36,26 @@ score = 0
 
 def draw_worm():
     for location in worm_locations:
-        print(term.move(*reversed(location)) + 'o', end='')
+        print(term.move(*reversed(location)) + term.bright_blue('o'), end='')
 
     print(term.move(*reversed(worm_head)) + '@' + term.move(*reversed(worm_head)), end='')
 
 
 def draw_frame():
     print(term.clear, end='')
-    print(term.move(0, 1) + 'Worm', end='')
+    print(term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + ' Press ' + term.bold_green('I') + ' for info, ' + term.bold_red('Ctrl-C')+ ' to quit', end='')
     if score > -1:
-        print(term.move(0, width-12) + f'Score:{" "*(4-len(str(score)))}{score}', end='')
-    print(term.move(1, 0) + '┌' + ('*' * (width-3)) + '┐', end='')
+        print(term.move(0, width-12) + f'Score:{" "*(4-len(str(score)))}{term.bright_green(str(score))}', end='')
+    print(term.move(1, 0) + term.white_on_red('┌' + ('─' * (width-3)) + '┐'), end='')
     for y in range(2, height-1):
-        print(term.move(y, 0) + '*' + term.move(y, width-2) + '*', end='')
-    print(term.move(height-1, 0) + '└' + ('*' * (width-3)) + '┘', end='')
-    print(term.move(*reversed(bonus_location)) + str(bonus_points), end='')
+        print(term.move(y, 0) + term.white_on_red('│' + term.move(y, width-2) + '│'), end='')
+    print(
+            term.move(height-1, 0)
+            + term.white_on_red('└')
+            + term.white_on_red('─' * (width-3))
+            + term.white_on_red('┘')
+        , end='')
+    print(term.move(*reversed(bonus_location)) + term.on_green(str(bonus_points)), end='')
     draw_worm()
     sys.stdout.flush()
 
@@ -127,10 +132,11 @@ while worm_head == bonus_location or bonus_location in worm_locations:
 
 
 do_automove = True
+do_help = False
 
 @timeout_decorator.timeout(1)
 def run(*_):
-    global do_automove
+    global do_automove, do_help
     if do_automove:
         move_head(last_dir, 1)
         draw_frame()
@@ -148,22 +154,100 @@ def run(*_):
             # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
             # control characters as well as Vim does.
             sys.exit(0)
+        elif k in 'iI':
+            do_help = True
+            return
 
 try:
     with term.fullscreen():
         os.system('stty raw -echo')
         draw_frame()
         while True:
-            try:
-                run()
-            except timeout_decorator.timeout_decorator.TimeoutError:
-                pass
+            if do_help:
+                os.system('stty -raw')
+                print(term.clear() + term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported to Python and improved
+
+See https://github.com/kj7rrv/worm.py for source code and installation
+instructions.
+
+Thanks to the authors of the following libraries:
+    * blessings\t\t{term.blue("https://pypi.org/project/blessings/")}
+    * timeout-decorator\t{term.blue("https://pypi.org/project/timeout-decorator/")}
+
+Also, thanks to the devolopers of Python and bsdgames worm. It would have been
+much harder to port worm to Python if either if either worm or Python did not
+exist.
+
+Use the arrow keys or WASD to move. Try to get the green numbers, but don't
+let the worm run into itself or the red edge.
+
+To change the initial length of the worm, add the desired length of the worm
+after `worm.py`, as in `worm.py 20` for a twenty-character-long worm.
+
+worm.py is released under the MIT license.''')
+
+                print(term.move(height - 1, 0) + 'Press ' + term.bold('C') + ' to continue, ' + term.bold('Ctrl-C') + ' to exit the game...', end='')
+                sys.stdout.flush()
+                os.system('stty raw')
+                while True:
+                    k = sys.stdin.read(1)
+                    if k in 'cC':
+                        break
+                    elif k in '':
+                        # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
+                        # control characters as well as Vim does.
+                        sys.exit(0)
+                os.system('stty -raw')
+                print(term.clear() + term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
+
+Copyright (c) 2021 Samuel L. Sloniker
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+''' + term.bold('''THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.'''))
+
+
+                print(term.move(height - 1, 0) + 'Press ' + term.bold('C') + ' to return to the game, ' + term.bold('Ctrl-C') + ' to exit...', end='')
+                sys.stdout.flush()
+                os.system('stty raw')
+                while True:
+                    k = sys.stdin.read(1)
+                    if k in 'cC':
+                        break
+                    elif k in '':
+                        # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
+                        # control characters as well as Vim does.
+                        sys.exit(0)
+
+                do_help = False
+            else:
+                try:
+                    run()
+                except timeout_decorator.timeout_decorator.TimeoutError:
+                    pass
 except KeyboardInterrupt:
     sys.exit(0)
 except RanIntoSomethingError:
     os.system('stty -raw echo')
     print('', end='\r\n')
-    print('Well, you ran into something and the game is over.', end='\r\n')
+    if size + 1 >= (height-3) * (width-1):
+        print('You won!', end='\r\n')
+    else:
+        print('Well, you ran into something and the game is over.', end='\r\n')
     print(f'Your final score was {score}', end='\r\n')
     print('', end='\r\n')
 finally:
