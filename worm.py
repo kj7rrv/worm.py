@@ -83,12 +83,7 @@ def move_head(direction, distance):
     if worm_head == bonus_location:
         size += bonus_points
         score += bonus_points
-        bonus_points = random.randint(1, 9)
-        while worm_head == bonus_location or bonus_location in worm_locations:
-            bonus_location = [
-                    random.randint(1, width-3),
-                    random.randint(2, height-2),
-                    ]
+        new_bonus()
 
     if distance > 1:
         move_head(direction, distance-1)
@@ -113,20 +108,17 @@ def run(*_):
 
     do_automove = True
 
-    while True:
-        k = sys.stdin.read(1)
-        if k in 'hjklHJKLABCDwasd':
-            move_head(k, 10 if k in 'HJKL' else 1)
-            draw_frame()
-            do_automove = False
-            return
-        elif k in '':
-            # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
-            # control characters as well as Vim does.
-            sys.exit(0)
-        elif k in 'iI':
-            do_help = True
-            return
+    k = await_keys('hjklHJKLABCDwasdiI')
+    if k in 'hjklHJKLABCDwasd':
+        move_head(k, 10 if k in 'HJKL' else 1)
+        draw_frame()
+        do_automove = False
+        return
+    elif k in '':
+        sys.exit(0)
+    elif k in 'iI':
+        do_help = True
+        return
 
 
 def await_keys(keys):
@@ -136,7 +128,21 @@ def await_keys(keys):
             return k
 
 
+def new_bonus():
+    global bonus_location, bonus_points
+    bonus_points = random.randint(1, 9)
+    bonus_location = worm_head
+    while worm_head == bonus_location or bonus_location in worm_locations:
+        bonus_location = [
+                random.randint(1, width-3),
+                random.randint(2, height-2),
+                ]
+
+
 term = Terminal()
+
+height = term.height
+width = term.width
 
 info_1 = term.clear() + term.move(0, 0) + term.on_red(' worm') \
         + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported \
@@ -199,9 +205,6 @@ SOFTWARE.''') \
         term.bold_red('Ctrl-C')
         )
 
-height = term.height
-width = term.width
-
 last_dir = 'x'
 
 if len(sys.argv) == 2:
@@ -221,13 +224,7 @@ worm_y = height // 2
 worm_locations = [[i+10, worm_y] for i in range(size)]
 worm_head = [size+10, worm_y]
 
-bonus_points = random.randint(1, 9)
-bonus_location = worm_head
-while worm_head == bonus_location or bonus_location in worm_locations:
-    bonus_location = [
-            random.randint(1, width-3),
-            random.randint(2, height-2),
-            ]
+new_bonus()
 
 do_automove = True
 do_help = False
