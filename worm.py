@@ -129,13 +129,80 @@ def run(*_):
             return
 
 
+def await_keys(keys):
+    while True:
+        k = sys.stdin.read(1)
+        if k in keys:
+            return k
+
+
 term = Terminal()
+
+info_1 = term.clear() + term.move(0, 0) + term.on_red(' worm') \
+        + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported \
+to Python and improved
+
+See https://github.com/kj7rrv/worm.py for source code and installation
+instructions.
+
+Thanks to the authors of the following libraries:
+    * blessings\t\t{term.blue("https://pypi.org/project/blessings/")}
+    * timeout-decorator\t\
+{term.blue("https://pypi.org/project/timeout-decorator/")}
+
+Also, thanks to the devolopers of Python and bsdgames worm. It would have been
+much harder to port worm to Python if either if either worm or Python did not
+exist.
+
+Use the arrow keys or WASD to move. Try to get the green numbers, but don't
+let the worm run into itself or the red edge.
+
+To change the initial length of the worm, add the desired length of the worm
+after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in \
+`{term.bright_red('worm')}{term.bright_cyan('.py')} 20` for a twenty-character\
+-long worm.
+
+{term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT \
+license.'''\
++ '{}Press {} to continue, {} to exit the game...'.format(
+        term.move(height - 1, 0),
+        term.bold_green('C'),
+        term.bold_red('Ctrl-C')
+        )
+
+info_2 = term.clear() + term.move(0, 0) + term.on_red(' worm') \
+        + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
+
+Copyright (c) 2021 Samuel L. Sloniker
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+''' + term.bold('''THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY \
+KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.''') \
++ '{}Press {} to return to the game, {} to exit...'.format(
+        term.move(height - 1, 0),
+        term.bold_green('C'),
+        term.bold_red('Ctrl-C')
+        )
 
 height = term.height
 width = term.width
 
 last_dir = 'x'
-
 
 if len(sys.argv) == 2:
     try:
@@ -147,10 +214,7 @@ if len(sys.argv) == 2:
 else:
     size = 7
 
-
-
 score = 0
-
 
 worm_y = height // 2
 
@@ -165,10 +229,8 @@ while worm_head == bonus_location or bonus_location in worm_locations:
             random.randint(2, height-2),
             ]
 
-
 do_automove = True
 do_help = False
-
 
 try:
     with term.fullscreen():
@@ -176,73 +238,14 @@ try:
         draw_frame()
         while True:
             if do_help:
-                os.system('stty -raw')
-                print(term.clear() + term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported to Python and improved
+                for info in (info_1, info_2):
+                    os.system('stty -raw')
+                    print(info, end='')
+                    sys.stdout.flush()
+                    os.system('stty raw')
 
-See https://github.com/kj7rrv/worm.py for source code and installation
-instructions.
-
-Thanks to the authors of the following libraries:
-    * blessings\t\t{term.blue("https://pypi.org/project/blessings/")}
-    * timeout-decorator\t{term.blue("https://pypi.org/project/timeout-decorator/")}
-
-Also, thanks to the devolopers of Python and bsdgames worm. It would have been
-much harder to port worm to Python if either if either worm or Python did not
-exist.
-
-Use the arrow keys or WASD to move. Try to get the green numbers, but don't
-let the worm run into itself or the red edge.
-
-To change the initial length of the worm, add the desired length of the worm
-after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in `{term.bright_red('worm')}{term.bright_cyan('.py')} 20` for a twenty-character-long worm.
-
-{term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT license.''')
-
-                print(term.move(height - 1, 0) + 'Press ' + term.bold_green('C') + ' to continue, ' + term.bold_red('Ctrl-C') + ' to exit the game...', end='')
-                sys.stdout.flush()
-                os.system('stty raw')
-                while True:
-                    k = sys.stdin.read(1)
-                    if k in 'cC':
-                        break
-                    elif k in '':
-                        # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
-                        # control characters as well as Vim does.
-                        sys.exit(0)
-                os.system('stty -raw')
-                print(term.clear() + term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
-
-Copyright (c) 2021 Samuel L. Sloniker
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-''' + term.bold('''THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.'''))
-
-
-                print(term.move(height - 1, 0) + 'Press ' + term.bold_green('C') + ' to return to the game, ' + term.bold_red('Ctrl-C') + ' to exit...', end='')
-                sys.stdout.flush()
-                os.system('stty raw')
-                while True:
-                    k = sys.stdin.read(1)
-                    if k in 'cC':
-                        break
-                    elif k in '':
-                        # That string is Ctrl-C Ctrl-\, in case you editor doesn't handle
-                        # control characters as well as Vim does.
+                    k = await_keys('cC')
+                    if k in '':
                         sys.exit(0)
 
                 do_help = False
