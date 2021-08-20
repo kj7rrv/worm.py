@@ -9,12 +9,6 @@ import timeout_decorator
 import os
 from blessings import Terminal
 
-term = Terminal()
-
-height = term.height
-width = term.width
-
-last_dir = 'x'
 
 class QuitGameError(BaseException):
     pass
@@ -23,19 +17,6 @@ class QuitGameError(BaseException):
 class RanIntoSomethingError(QuitGameError):
     pass
 
-if len(sys.argv) == 2:
-    try:
-        size = int(sys.argv[1])
-        if size <= 0 or size >= width-13:
-            size = 7
-    except ValueError:
-        size = 7
-else:
-    size = 7
-
-
-
-score = 0
 
 def draw_worm():
     for location in worm_locations:
@@ -58,9 +39,10 @@ def draw_frame():
             + term.white_on_red('─' * (width-3))
             + term.white_on_red('┘')
         , end='')
-    print(term.move(*reversed(bonus_location)) + term.black_on_bright_green(str(bonus_points)), end='')
+    print(term.move(*reversed(bonus_location)) + term.black_on_green(term.on_bright_green(str(bonus_points))), end='')
     draw_worm()
     sys.stdout.flush()
+
 
 def move_head(direction, distance):
     global size, worm_head, last_dir, worm_locations, bonus_location, bonus_points, score
@@ -111,6 +93,7 @@ def move_head(direction, distance):
     if distance > 1:
         move_head(direction, distance-1)
 
+
 @contextlib.contextmanager
 def decanonize(fd):
     old_settings = termios.tcgetattr(fd)
@@ -120,22 +103,6 @@ def decanonize(fd):
     yield
     termios.tcsetattr(fd, termios.TCSAFLUSH, old_settings)
 
-worm_y = height // 2
-
-worm_locations = [[i+10, worm_y] for i in range(size)]
-worm_head = [size+10, worm_y]
-
-bonus_points = random.randint(1, 9)
-bonus_location = worm_head
-while worm_head == bonus_location or bonus_location in worm_locations:
-    bonus_location = [
-            random.randint(1, width-3),
-            random.randint(2, height-2),
-            ]
-
-
-do_automove = True
-do_help = False
 
 @timeout_decorator.timeout(1)
 def run(*_):
@@ -160,6 +127,48 @@ def run(*_):
         elif k in 'iI':
             do_help = True
             return
+
+
+term = Terminal()
+
+height = term.height
+width = term.width
+
+last_dir = 'x'
+
+
+if len(sys.argv) == 2:
+    try:
+        size = int(sys.argv[1])
+        if size <= 0 or size >= width-13:
+            size = 7
+    except ValueError:
+        size = 7
+else:
+    size = 7
+
+
+
+score = 0
+
+
+worm_y = height // 2
+
+worm_locations = [[i+10, worm_y] for i in range(size)]
+worm_head = [size+10, worm_y]
+
+bonus_points = random.randint(1, 9)
+bonus_location = worm_head
+while worm_head == bonus_location or bonus_location in worm_locations:
+    bonus_location = [
+            random.randint(1, width-3),
+            random.randint(2, height-2),
+            ]
+
+
+do_automove = True
+do_help = False
+
 
 try:
     with term.fullscreen():
