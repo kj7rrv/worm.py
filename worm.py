@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import random
 import time
@@ -11,6 +13,7 @@ term = Terminal()
 
 height = term.height
 width = term.width
+
 last_dir = 'x'
 
 class QuitGameError(BaseException):
@@ -55,7 +58,7 @@ def draw_frame():
             + term.white_on_red('─' * (width-3))
             + term.white_on_red('┘')
         , end='')
-    print(term.move(*reversed(bonus_location)) + term.on_green(str(bonus_points)), end='')
+    print(term.move(*reversed(bonus_location)) + term.black_on_bright_green(str(bonus_points)), end='')
     draw_worm()
     sys.stdout.flush()
 
@@ -182,11 +185,11 @@ Use the arrow keys or WASD to move. Try to get the green numbers, but don't
 let the worm run into itself or the red edge.
 
 To change the initial length of the worm, add the desired length of the worm
-after `worm.py`, as in `worm.py 20` for a twenty-character-long worm.
+after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in `{term.bright_red('worm')}{term.bright_cyan('.py')} 20` for a twenty-character-long worm.
 
-worm.py is released under the MIT license.''')
+{term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT license.''')
 
-                print(term.move(height - 1, 0) + 'Press ' + term.bold('C') + ' to continue, ' + term.bold('Ctrl-C') + ' to exit the game...', end='')
+                print(term.move(height - 1, 0) + 'Press ' + term.bold_green('C') + ' to continue, ' + term.bold_red('Ctrl-C') + ' to exit the game...', end='')
                 sys.stdout.flush()
                 os.system('stty raw')
                 while True:
@@ -221,7 +224,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.'''))
 
 
-                print(term.move(height - 1, 0) + 'Press ' + term.bold('C') + ' to return to the game, ' + term.bold('Ctrl-C') + ' to exit...', end='')
+                print(term.move(height - 1, 0) + 'Press ' + term.bold_green('C') + ' to return to the game, ' + term.bold_red('Ctrl-C') + ' to exit...', end='')
                 sys.stdout.flush()
                 os.system('stty raw')
                 while True:
