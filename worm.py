@@ -7,6 +7,8 @@ import contextlib
 import termios
 import timeout_decorator
 import os
+import argparse
+import json
 from blessings import Terminal
 
 
@@ -20,26 +22,26 @@ class RanIntoSomethingError(QuitGameError):
 
 def draw_worm():
     for location in worm_locations:
-        print(term.move(*reversed(location)) + term.bright_blue('o'), end='')
+        print(do_move(*reversed(location)) + term.bright_blue('o'), end='')
 
-    print(term.move(*reversed(worm_head)) + '@' + term.move(*reversed(worm_head)), end='')
+    print(do_move(*reversed(worm_head)) + '@' + do_move(*reversed(worm_head)), end='')
 
 
 def draw_frame():
     print(term.clear, end='')
-    print(term.move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + ' Press ' + term.bold_green('I') + ' for info, ' + term.bold_red('Ctrl-C')+ ' to quit', end='')
+    print(do_move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + ' Press ' + term.bold_green('I') + ' for info, ' + term.bold_red('Ctrl-C')+ ' to quit', end='')
     if score > -1:
-        print(term.move(0, width-12) + f'Score:{" "*(4-len(str(score)))}{term.bright_green(str(score))}', end='')
-    print(term.move(1, 0) + term.white_on_red('┌' + ('─' * (width-3)) + '┐'), end='')
+        print(do_move(0, width-12) + f'Score:{" "*(4-len(str(score)))}{term.bright_green(str(score))}', end='')
+    print(do_move(1, 0) + term.white_on_red('┌' + ('─' * (width-3)) + '┐'), end='')
     for y in range(2, height-1):
-        print(term.move(y, 0) + term.white_on_red('│' + term.move(y, width-2) + '│'), end='')
+        print(do_move(y, 0) + term.white_on_red('│' + do_move(y, width-2) + '│'), end='')
     print(
-            term.move(height-1, 0)
+            do_move(height-1, 0)
             + term.white_on_red('└')
             + term.white_on_red('─' * (width-3))
             + term.white_on_red('┘')
         , end='')
-    print(term.move(*reversed(bonus_location)) + term.black_on_green(term.on_bright_green(str(bonus_points))), end='')
+    print(do_move(*reversed(bonus_location)) + term.black_on_green(term.on_bright_green(str(bonus_points))), end='')
     draw_worm()
     sys.stdout.flush()
 
@@ -115,6 +117,7 @@ def run(*_):
         do_automove = False
         return
     elif k in '':
+        save_game()
         sys.exit(0)
     elif k in 'iI':
         do_help = True
@@ -139,12 +142,42 @@ def new_bonus():
                 ]
 
 
+def do_move(y, x):
+    y += (term.height - height) // 2
+    x += (term.width - width) // 2
+    return term.move(y, x)
+
+
 term = Terminal()
+gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
-height = term.height
-width = term.width
+parser = argparse.ArgumentParser()
+parser.add_argument("--length", '-l', help="initial worm length (default 7)", default=7, type=int)
+parser.add_argument("--save", '-s', help="enable game saving (sets screen size to 80x24)", action='store_true')
+parser.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
+args = parser.parse_args()
+size = args.length
 
-info_1 = term.clear() + term.move(0, 0) + term.on_red(' worm') \
+if args.delete_save:
+    try:
+        os.unlink(gamesave_path)
+        print("Saved game deleted.")
+    except FileNotFoundError:
+        print("No saved game found.")
+    except Exception as e:
+        print("An error occurred.")
+        print(str(type(e)).split("'")[1] + ': ' + str(e))
+        sys.exit(1)
+    sys.exit(0)
+
+if args.save:
+    height = 24
+    width = 80
+else:
+    height = term.height
+    width = term.width
+
+info_1 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
         + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported \
 to Python and improved
 
@@ -171,12 +204,12 @@ after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in \
 {term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT \
 license.'''\
 + '{}Press {} to continue, {} to exit the game...'.format(
-        term.move(height - 1, 0),
+        do_move(height - 1, 0),
         term.bold_green('C'),
         term.bold_red('Ctrl-C')
         )
 
-info_2 = term.clear() + term.move(0, 0) + term.on_red(' worm') \
+info_2 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
         + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
 
 Copyright (c) 2021 Samuel L. Sloniker
@@ -200,34 +233,37 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.''') \
 + '{}Press {} to return to the game, {} to exit...'.format(
-        term.move(height - 1, 0),
+        do_move(height - 1, 0),
         term.bold_green('C'),
         term.bold_red('Ctrl-C')
         )
 
-last_dir = 'x'
 
-if len(sys.argv) == 2:
-    try:
-        size = int(sys.argv[1])
-        if size <= 0 or size >= width-13:
-            size = 7
-    except ValueError:
-        size = 7
-else:
-    size = 7
-
-score = 0
 
 worm_y = height // 2
 
-worm_locations = [[i+10, worm_y] for i in range(size)]
-worm_head = [size+10, worm_y]
+def save_game():
+    if args.save:
+        with open(gamesave_path, 'w+') as f:
+            json.dump([worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help], f)
 
-new_bonus()
+try:
+    if not args.save:
+        raise FileNotFoundError() #TODO: this is not pythonic
 
-do_automove = True
-do_help = False
+    with open(gamesave_path) as f:
+        save = json.load(f)
+        worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help = save
+except FileNotFoundError:
+    worm_locations = [[i+10, worm_y] for i in range(size)]
+    worm_head = [size+10, worm_y]
+    last_dir = 'x'
+    score = 0
+    do_automove = True
+    do_help = False
+    new_bonus()
+
+
 
 try:
     with term.fullscreen():
@@ -243,6 +279,7 @@ try:
 
                     k = await_keys('cC')
                     if k in '':
+                        save_game()
                         sys.exit(0)
 
                 do_help = False
@@ -252,8 +289,14 @@ try:
                 except timeout_decorator.timeout_decorator.TimeoutError:
                     pass
 except KeyboardInterrupt:
+    save_game()
     sys.exit(0)
 except RanIntoSomethingError:
+    try:
+        if args.save:
+            os.unlink(gamesave_path)
+    except FileNotFoundError:
+        pass
     os.system('stty -raw echo')
     print('', end='\r\n')
     if size + 1 >= (height-3) * (width-1):
