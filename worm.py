@@ -9,6 +9,7 @@ import timeout_decorator
 import os
 import argparse
 import json
+import info
 from blessings import Terminal
 
 
@@ -109,6 +110,8 @@ def run(*_):
         draw_frame()
 
     do_automove = True
+    
+    save_game()
 
     k = await_keys('hjklHJKLABCDwasdiI')
     if k in 'hjklHJKLABCDwasd':
@@ -148,6 +151,12 @@ def do_move(y, x):
     return term.move(y, x)
 
 
+def save_game():
+    if args.save:
+        with open(gamesave_path, 'w+') as f:
+            json.dump([worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help], f)
+
+
 term = Terminal()
 gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
@@ -156,7 +165,6 @@ parser.add_argument("--length", '-l', help="initial worm length (default 7)", de
 parser.add_argument("--save", '-s', help="enable game saving (sets screen size to 80x24)", action='store_true')
 parser.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
 args = parser.parse_args()
-size = args.length
 
 if args.delete_save:
     try:
@@ -177,76 +185,9 @@ else:
     height = term.height
     width = term.width
 
-info_1 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
-        + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported \
-to Python and improved
-
-See https://github.com/kj7rrv/worm.py for source code and installation
-instructions.
-
-Thanks to the authors of the following libraries:
-    * blessings\t\t{term.blue("https://pypi.org/project/blessings/")}
-    * timeout-decorator\t\
-{term.blue("https://pypi.org/project/timeout-decorator/")}
-
-Also, thanks to the devolopers of Python and bsdgames worm. It would have been
-much harder to port worm to Python if either if either worm or Python did not
-exist.
-
-Use the arrow keys or WASD to move. Try to get the green numbers, but don't
-let the worm run into itself or the red edge.
-
-To change the initial length of the worm, add the desired length of the worm
-after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in \
-`{term.bright_red('worm')}{term.bright_cyan('.py')} 20` for a twenty-character\
--long worm.
-
-{term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT \
-license.'''\
-+ '{}Press {} to continue, {} to exit the game...'.format(
-        do_move(height - 1, 0),
-        term.bold_green('C'),
-        term.bold_red('Ctrl-C')
-        )
-
-info_2 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
-        + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
-
-Copyright (c) 2021 Samuel L. Sloniker
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of
-this software and associated documentation files (the "Software"), to deal in
-the Software without restriction, including without limitation the rights to
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
-of the Software, and to permit persons to whom the Software is furnished to do
-so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-''' + term.bold('''THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY \
-KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.''') \
-+ '{}Press {} to return to the game, {} to exit...'.format(
-        do_move(height - 1, 0),
-        term.bold_green('C'),
-        term.bold_red('Ctrl-C')
-        )
-
-
-
 worm_y = height // 2
-
-def save_game():
-    if args.save:
-        with open(gamesave_path, 'w+') as f:
-            json.dump([worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help], f)
-
+x_offset = (term.width - width) // 2
+info_1, info_2 = info.get_infos(term, do_move, height, width, x_offset)
 try:
     if not args.save:
         raise FileNotFoundError() #TODO: this is not pythonic
@@ -255,14 +196,14 @@ try:
         save = json.load(f)
         worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help = save
 except FileNotFoundError:
+    size = args.length
     worm_locations = [[i+10, worm_y] for i in range(size)]
     worm_head = [size+10, worm_y]
     last_dir = 'x'
     score = 0
+    new_bonus()
     do_automove = True
     do_help = False
-    new_bonus()
-
 
 
 try:
