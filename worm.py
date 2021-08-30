@@ -152,7 +152,7 @@ def do_move(y, x):
 
 
 def save_game():
-    if args.save:
+    if not args.full_screen:
         with open(gamesave_path, 'w+') as f:
             json.dump([worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help], f)
 
@@ -162,7 +162,7 @@ gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--length", '-l', help="initial worm length (default 7)", default=7, type=int)
-parser.add_argument("--save", '-s', help="enable game saving (sets screen size to 80x24)", action='store_true')
+parser.add_argument("--full-screen", '-f', help="use entire screen (disables game saving)", action='store_true')
 parser.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
 args = parser.parse_args()
 
@@ -178,7 +178,7 @@ if args.delete_save:
         sys.exit(1)
     sys.exit(0)
 
-if args.save:
+if not args.full_screen:
     height = 24
     width = 80
 else:
@@ -189,7 +189,7 @@ worm_y = height // 2
 x_offset = (term.width - width) // 2
 info_1, info_2 = info.get_infos(term, do_move, height, width, x_offset)
 try:
-    if not args.save:
+    if args.full_screen:
         raise FileNotFoundError() #TODO: this is not pythonic
 
     with open(gamesave_path) as f:
@@ -234,7 +234,7 @@ except KeyboardInterrupt:
     sys.exit(0)
 except RanIntoSomethingError:
     try:
-        if args.save:
+        if not args.full_screen:
             os.unlink(gamesave_path)
     except FileNotFoundError:
         pass
