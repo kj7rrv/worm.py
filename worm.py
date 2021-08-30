@@ -10,6 +10,7 @@ import os
 import argparse
 import json
 import info
+import stty
 from blessings import Terminal
 
 
@@ -211,15 +212,15 @@ except (FileNotFoundError, IsFullScreen):
 
 try:
     with term.fullscreen():
-        os.system('stty raw -echo')
+        stty.stty(raw=True, echo=False)
         draw_frame()
         while True:
             if do_help:
                 for info in (info_1, info_2):
-                    os.system('stty -raw')
+                    stty.stty(raw=False)
                     print(info, end='')
                     sys.stdout.flush()
-                    os.system('stty raw')
+                    stty.stty(raw=True)
 
                     k = await_keys('cC')
                     if k in '':
@@ -241,7 +242,7 @@ except RanIntoSomethingError:
             os.unlink(gamesave_path)
     except FileNotFoundError:
         pass
-    os.system('stty -raw echo')
+    stty.stty(raw=False, echo=True)
     print('', end='\r\n')
     if size + 1 >= (height-3) * (width-1):
         print('You won!', end='\r\n')
@@ -250,4 +251,4 @@ except RanIntoSomethingError:
     print(f'Your final score was {score}', end='\r\n')
     print('', end='\r\n')
 finally:
-    os.system('stty -raw echo')
+    stty.stty(raw=False, echo=True)
