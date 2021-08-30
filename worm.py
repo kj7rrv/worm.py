@@ -21,6 +21,10 @@ class RanIntoSomethingError(QuitGameError):
     pass
 
 
+class IsFullScreen(BaseException):
+    pass
+
+
 def draw_worm():
     for location in worm_locations:
         print(do_move(*reversed(location)) + term.bright_blue('o'), end='')
@@ -189,12 +193,12 @@ x_offset = (term.width - width) // 2
 info_1, info_2 = info.get_infos(term, do_move, height, width, x_offset)
 try:
     if args.full_screen:
-        raise FileNotFoundError() #TODO: this is not pythonic
+        raise IsFullScreen()
 
     with open(gamesave_path) as f:
         save = json.load(f)
         worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help = save
-except FileNotFoundError:
+except (FileNotFoundError, IsFullScreen):
     size = 7
     worm_locations = [[i+10, worm_y] for i in range(size)]
     worm_head = [size+10, worm_y]
