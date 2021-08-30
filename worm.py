@@ -11,6 +11,7 @@ import argparse
 import json
 import info
 import stty
+import shutil
 from blessings import Terminal
 
 
@@ -166,28 +167,44 @@ term = Terminal()
 gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--full-screen", '-f', help="use entire screen (disables game saving)", action='store_true')
-parser.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
+group = parser.add_mutually_exclusive_group()
+group.add_argument("--save-game", '-s', help="use 80x24 box and save game on ^C (default)", action='store_true', default=True)
+group.add_argument("--full-screen", '-f', help="use entire screen (disables game saving)", action='store_true')
+group.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
 args = parser.parse_args()
 
 if args.delete_save:
     try:
-        os.unlink(gamesave_path)
+        shutil.move(gamesave_path, gamesave_path + '-old')
         print("Saved game deleted.")
     except FileNotFoundError:
         print("No saved game found.")
     except Exception as e:
         print("An error occurred.")
         print(str(type(e)).split("'")[1] + ': ' + str(e))
-        sys.exit(1)
+        cont = input("Do you want to try to non-recoverably delete the saved game? [Y/n] ")
+        if cont[0] in 'Yy':
+            try:
+                os.unlink(gamesave_path)
+                print("Saved game deleted.")
+            except Exception as e:
+                print("An error occurred.")
+                print(str(type(e)).split("'")[1] + ': ' + str(e))
+            sys.exit(1)
+        else:
+            sys.exit(1)
     sys.exit(0)
-
-if not args.full_screen:
+elif args.save_game:
     height = 24
     width = 80
-else:
+elif args.full_screen:
     height = term.height
     width = term.width
+else:
+    print("An unhandleable error occurred.")
+    print("The code was not expected to reach this state.")
+    print("Please create an issue at https://github.com/kj7rrv/worm.py/issues")
+    sys.exit(2)
 
 worm_y = height // 2
 x_offset = (term.width - width) // 2
