@@ -161,7 +161,6 @@ term = Terminal()
 gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--length", '-l', help="initial worm length (default 7)", default=7, type=int)
 parser.add_argument("--full-screen", '-f', help="use entire screen (disables game saving)", action='store_true')
 parser.add_argument("--delete-save", help="delete saved game and exit", action='store_true')
 args = parser.parse_args()
@@ -196,7 +195,7 @@ try:
         save = json.load(f)
         worm_locations, worm_head, last_dir, score, size, bonus_location, bonus_points, do_automove, do_help = save
 except FileNotFoundError:
-    size = args.length
+    size = 7
     worm_locations = [[i+10, worm_y] for i in range(size)]
     worm_head = [size+10, worm_y]
     last_dir = 'x'
