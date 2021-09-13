@@ -1,9 +1,9 @@
 def get_infos(term, do_move, height, width, x_offset):
-    info_1 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
-            + term.bright_cyan_on_red('.py ') + f''' v1.0: bsdgames worm, ported \
+    info_1 = term.clear() + do_move(0, 0) + term.on_red(' Worm') \
+            + term.black_on_bright_cyan('.py ') + f''' v1.0: bsdgames worm, ported \
 to Python and improved
 
-See https://github.com/kj7rrv/worm.py for source code and installation
+See https://github.com/kj7rrv/wormpy for source code and installation
 instructions.
 
 Thanks to the authors of the following libraries:
@@ -19,11 +19,11 @@ Use the arrow keys or WASD to move. Try to get the green numbers, but don't
 let the worm run into itself or the red edge.
 
 To change the initial length of the worm, add the desired length of the worm
-after `{term.bright_red('worm')}{term.bright_cyan('.py')}`, as in \
-`{term.bright_red('worm')}{term.bright_cyan('.py')} 20` for a twenty-character\
+after `{term.bright_red('worm')}{term.bright_cyan('py')}`, as in \
+`{term.bright_red('worm')}{term.bright_cyan('py')} 20` for a twenty-character\
 -long worm.
 
-{term.bright_red('worm')}{term.bright_cyan('.py')} is released under the MIT \
+{term.bright_red('Worm')}{term.bright_cyan('.py')} is released under the MIT \
 license.'''\
     + '{}Press {} to continue, {} to exit the game...'.format(
             do_move(height - 1, 0),
@@ -31,8 +31,8 @@ license.'''\
             term.bold_red('Ctrl-C')
             )
 
-    info_2 = term.clear() + do_move(0, 0) + term.on_red(' worm') \
-            + term.bright_cyan_on_red('.py ') + f''' Copyright and License Info
+    info_2 = term.clear() + do_move(0, 0) + term.on_red(' Worm') \
+            + term.black_on_bright_cyan('.py ') + f''' Copyright and License Info
 
 Copyright (c) 2021 Samuel L. Sloniker
 

@@ -36,7 +36,7 @@ def draw_worm():
 
 def draw_frame():
     print(term.clear, end='')
-    print(do_move(0, 0) + term.on_red(' worm') + term.bright_cyan_on_red('.py ') + ' Press ' + term.bold_green('I') + ' for info, ' + term.bold_red('Ctrl-C')+ ' to quit', end='')
+    print(do_move(0, 0) + term.on_red(' Worm') + term.black_on_bright_cyan('.py ') + ' Press ' + term.bold_green('I') + ' for info, ' + term.bold_red('Ctrl-C')+ ' to quit', end='')
     if score > -1:
         print(do_move(0, width-12) + f'Score:{" "*(4-len(str(score)))}{term.bright_green(str(score))}', end='')
     print(do_move(1, 0) + term.white_on_red('┌' + ('─' * (width-3)) + '┐'), end='')
@@ -166,7 +166,7 @@ def save_game():
 term = Terminal()
 gamesave_path = os.path.join(os.getenv('HOME'), '.worm.py-gamesave')
 
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(prog='wormpy')
 group = parser.add_mutually_exclusive_group()
 group.add_argument("--save-game", '-s', help="use 80x24 box and save game on ^C (default)", action='store_true', default=True)
 group.add_argument("--full-screen", '-f', help="use entire screen (disables game saving)", action='store_true')
@@ -203,7 +203,7 @@ elif args.full_screen:
 else:
     print("An unhandleable error occurred.")
     print("The code was not expected to reach this state.")
-    print("Please create an issue at https://github.com/kj7rrv/worm.py/issues")
+    print("Please create an issue at https://github.com/kj7rrv/wormpy/issues")
     sys.exit(2)
 
 worm_y = height // 2
